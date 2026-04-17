@@ -318,7 +318,7 @@
   <body>
     <section class="shoplist-card">
       <div class="shoplist-head">
-        <h2>上位3ショップ <span class="sub">（価格の安い順）</span></h2>
+        <h2>上位3ショップ</h2>
         <button type="button" class="open-modal-btn" id="openModal">全ショップを見る</button>
       </div>
 
@@ -358,17 +358,17 @@
 
     <div class="modal-overlay" id="shopModal" aria-hidden="true">
       <div class="modal" role="dialog" aria-modal="true" aria-labelledby="shopModalTitle">
-        <h3 id="shopModalTitle">全ショップ一覧（商品価格が安い順）</h3>
+        <h3 id="shopModalTitle">全ショップ一覧</h3>
         <table>
           <thead>
             <tr>
-              <th>順位（商品価格安い順）</th>
-              <th>販売店名（リンク）</th>
+              <th>順位</th>
+              <th>販売店名</th>
               <th>商品価格</th>
-              <th>数量</th>
-              <th>小計（円）</th>
               <th>粗利益額（円）</th>
               <th>粗利益率（％）</th>
+              <th>数量</th>
+              <th>小計（円）</th>
               <th>商品情報</th>
             </tr>
           </thead>
@@ -393,7 +393,7 @@
           price: 2520,
           unitGrossProfit: 972,
           grossMargin: 38.6,
-          info: '商品名: 高精度クラフトはさみ 200mm / 型番 SC-200'
+          info: '商品名: プロフィットはさみ 200mm スタンダード / 型番 SC-200'
         },
         {
           shop: 'Yahoo!ショッピング',
@@ -401,7 +401,7 @@
           price: 3900,
           unitGrossProfit: 199,
           grossMargin: 5.1,
-          info: '商品名: ステンレス万能はさみ 195mm / JAN 1234567890123'
+          info: '商品名: プロフィットはさみ 200mm スタンダード / JAN 1234567890123'
         },
         {
           shop: '楽天市場',
@@ -409,7 +409,7 @@
           price: 3980,
           unitGrossProfit: 123,
           grossMargin: 3.1,
-          info: '商品名: 軽量フィットはさみ（国内正規品）'
+          info: '商品名: プロフィットはさみ 200mm スタンダード（国内正規品）'
         },
         {
           shop: 'Qoo10',
@@ -417,7 +417,7 @@
           price: 4150,
           unitGrossProfit: 48,
           grossMargin: 1.2,
-          info: '商品名: 強力カットはさみ [並行輸入]'
+          info: '商品名: プロフィットはさみ 200mm スタンダード [並行輸入]'
         },
         {
           shop: 'au PAY マーケット',
@@ -425,7 +425,7 @@
           price: 4230,
           unitGrossProfit: 65,
           grossMargin: 1.5,
-          info: '商品名: 事務用オールステンレスはさみ'
+          info: '商品名: プロフィットはさみ 200mm スタンダード オールステンレス'
         },
         {
           shop: 'ヨドバシ.com',
@@ -433,7 +433,7 @@
           price: 4290,
           unitGrossProfit: 82,
           grossMargin: 1.9,
-          info: '商品名: 左右対称グリップはさみ'
+          info: '商品名: プロフィットはさみ 200mm スタンダード 左右対称グリップ'
         },
         {
           shop: 'LOHACO',
@@ -441,7 +441,7 @@
           price: 4350,
           unitGrossProfit: 90,
           grossMargin: 2.1,
-          info: '商品名: 家庭用多目的はさみ 180mm'
+          info: '商品名: プロフィットはさみ 200mm スタンダード 家庭用モデル'
         },
         {
           shop: 'MonotaRO',
@@ -449,7 +449,7 @@
           price: 4480,
           unitGrossProfit: 105,
           grossMargin: 2.3,
-          info: '商品名: 工作用ハードブレードはさみ'
+          info: '商品名: プロフィットはさみ 200mm スタンダード 工作用モデル'
         },
         {
           shop: 'ASKUL',
@@ -457,7 +457,7 @@
           price: 4590,
           unitGrossProfit: 115,
           grossMargin: 2.5,
-          info: '商品名: オフィス向け抗菌はさみ 175mm'
+          info: '商品名: プロフィットはさみ 200mm スタンダード 抗菌モデル'
         },
         {
           shop: 'ビックカメラ.com',
@@ -465,7 +465,7 @@
           price: 4720,
           unitGrossProfit: 129,
           grossMargin: 2.7,
-          info: '商品名: チタンコート高耐久はさみ'
+          info: '商品名: プロフィットはさみ 200mm スタンダード チタンコート'
         }
       ];
 
@@ -491,10 +491,8 @@
       function updateRowValues(index) {
         const row = shopData[index];
         const subtotalEl = document.querySelector(`[data-subtotal='${index}']`);
-        const grossProfitEl = document.querySelector(`[data-gross-profit='${index}']`);
 
         subtotalEl.textContent = formatMoney(row.price * row.quantity);
-        grossProfitEl.textContent = formatMoney(row.unitGrossProfit * row.quantity);
       }
 
       function onQuantityChange(event) {
@@ -527,6 +525,8 @@
                   <span class="price-line">${formatMoney(row.price)}</span>
                   ${diffLabel}
                 </td>
+                <td class="money-cell"><span class="gross-profit">${formatMoney(row.unitGrossProfit)}</span></td>
+                <td>${row.grossMargin.toFixed(1)}%</td>
                 <td>
                   <input
                     type="number"
@@ -537,8 +537,6 @@
                   />
                 </td>
                 <td class="money-cell"><span class="subtotal" data-subtotal="${idx}">${formatMoney(row.price * row.quantity)}</span></td>
-                <td class="money-cell"><span class="gross-profit" data-gross-profit="${idx}">${formatMoney(row.unitGrossProfit * row.quantity)}</span></td>
-                <td>${row.grossMargin.toFixed(1)}</td>
                 <td>${row.info}</td>
               </tr>
             `;
