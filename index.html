@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ショップ比較モーダル</title>
+    <style>
+      :root {
+        --bg: #d9d6b5;
+        --card-1: #eab155;
+        --card-2: #e8cfa0;
+        --card-3: #edd4ad;
+        --badge: #e7b200;
+        --text-main: #1b1b1b;
+        --text-sub: #596579;
+        --white: #f2f4f7;
+        --modal-bg: #f6f1df;
+        --line: #d4c8a5;
+        --accent: #2f6bb3;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 24px;
+        font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+        color: var(--text-main);
+        background: #f7f7f2;
+      }
+
+      .shoplist-card {
+        max-width: 720px;
+        margin: 0 auto;
+        border-radius: 22px;
+        background: var(--bg);
+        padding: 18px;
+      }
+
+      .shoplist-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .shoplist-head h2 {
+        margin: 0;
+        font-size: 28px;
+      }
+
+      .sub {
+        font-size: 26px;
+        font-weight: 700;
+        margin-left: 6px;
+      }
+
+      .open-modal-btn,
+      .modal-footer button {
+        border: none;
+        border-radius: 999px;
+        font-size: 20px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .open-modal-btn {
+        padding: 14px 24px;
+        background: var(--white);
+      }
+
+      .shop-card {
+        border-radius: 999px;
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        align-items: center;
+        gap: 16px;
+        padding: 14px 20px;
+      }
+
+      .shop-card + .shop-card {
+        margin-top: 12px;
+      }
+
+      .shop-card:nth-of-type(1) {
+        background: var(--card-1);
+      }
+
+      .shop-card:nth-of-type(2) {
+        background: var(--card-2);
+      }
+
+      .shop-card:nth-of-type(3) {
+        background: var(--card-3);
+      }
+
+      .rank-badge {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        font-size: 24px;
+        background: var(--badge);
+      }
+
+      .name-price {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .shop-name {
+        font-size: 38px;
+        font-weight: 800;
+      }
+
+      .price-pill,
+      .qty-input {
+        border: 2px solid #d5dae2;
+        border-radius: 18px;
+        background: var(--white);
+        font-weight: 700;
+      }
+
+      .price-pill {
+        min-width: 160px;
+        text-align: center;
+        font-size: 36px;
+        padding: 8px 12px;
+      }
+
+      .meta {
+        font-size: 34px;
+        color: var(--text-sub);
+        font-weight: 800;
+      }
+
+      .qty-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 34px;
+        font-weight: 800;
+      }
+
+      .qty-input {
+        width: 90px;
+        font-size: 38px;
+        text-align: center;
+        padding: 8px;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+      }
+
+      .modal {
+        width: min(1220px, 100%);
+        max-height: 90vh;
+        overflow: auto;
+        border-radius: 20px;
+        background: var(--modal-bg);
+        padding: 24px;
+      }
+
+      .modal h3 {
+        margin: 0 0 14px;
+        font-size: 28px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fffdf4;
+        border-radius: 14px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        padding: 10px 12px;
+        font-size: 16px;
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      th {
+        background: #efe6ca;
+        font-weight: 800;
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .shop-link {
+        color: var(--accent);
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .shop-link:hover {
+        text-decoration: underline;
+      }
+
+      .price-line,
+      .subtotal,
+      .gross-profit {
+        font-weight: 700;
+      }
+
+      .price-diff {
+        color: #6c7077;
+        font-size: 14px;
+        margin-left: 6px;
+      }
+
+      .qty-modal-input {
+        width: 72px;
+        border: 1px solid #c8cccf;
+        border-radius: 10px;
+        padding: 6px 10px;
+        text-align: right;
+      }
+
+      .money-cell {
+        white-space: nowrap;
+      }
+
+      .modal-footer {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 12px;
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        background: #f3eacd;
+        border-top: 1px solid #d7ca9e;
+        padding: 14px 12px 6px;
+      }
+
+      .footer-right {
+        display: flex;
+        gap: 12px;
+        justify-self: end;
+      }
+
+      .total-purchase {
+        background: #ede4c7;
+        border: 2px solid #ccb57a;
+        border-radius: 14px;
+        padding: 14px 20px;
+        font-weight: 700;
+        font-size: 20px;
+        grid-column: 2;
+        justify-self: center;
+      }
+
+      .total-purchase strong {
+        margin-left: 10px;
+        font-size: 30px;
+      }
+
+      .back-btn {
+        background: #d9d9d9;
+        color: #202020;
+        padding: 10px 22px;
+      }
+
+      .apply-btn {
+        background: #efbe59;
+        color: #1b1b1b;
+        padding: 10px 22px;
+      }
+
+      @media (max-width: 780px) {
+        .shop-card {
+          grid-template-columns: auto 1fr;
+          border-radius: 24px;
+        }
+
+        .name-price {
+          flex-wrap: wrap;
+        }
+
+        .shop-name {
+          font-size: 28px;
+        }
+
+        .price-pill,
+        .qty-input,
+        .meta,
+        .qty-wrap,
+        .shoplist-head h2,
+        .sub {
+          font-size: 22px;
+        }
+
+        .modal-footer {
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .footer-right {
+          justify-content: flex-end;
+        }
+
+        .total-purchase {
+          grid-column: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <section class="shoplist-card">
+      <div class="shoplist-head">
+        <h2>上位3ショップ</h2>
+        <button type="button" class="open-modal-btn" id="openModal">全ショップを見る</button>
+      </div>
+
+      <article class="shop-card">
+        <div class="rank-badge">1</div>
+        <div class="name-price">
+          <span class="shop-name">Amazon</span>
+          <span class="price-pill">2,520</span>
+          <span class="meta">円&nbsp;&nbsp;粗利益率 38.6%</span>
+        </div>
+        <div class="qty-wrap">数量</div>
+        <input class="qty-input" value="0" readonly />
+      </article>
+
+      <article class="shop-card">
+        <div class="rank-badge">2</div>
+        <div class="name-price">
+          <span class="shop-name">Yahoo</span>
+          <span class="price-pill">3,900</span>
+          <span class="meta">円&nbsp;&nbsp;粗利益率 5.1%</span>
+        </div>
+        <div class="qty-wrap">数量</div>
+        <input class="qty-input" value="0" readonly />
+      </article>
+
+      <article class="shop-card">
+        <div class="rank-badge">3</div>
+        <div class="name-price">
+          <span class="shop-name">楽天</span>
+          <span class="price-pill">3,980</span>
+          <span class="meta">円&nbsp;&nbsp;粗利益率 3.1%</span>
+        </div>
+        <div class="qty-wrap">数量</div>
+        <input class="qty-input" value="0" readonly />
+      </article>
+    </section>
+
+    <div class="modal-overlay active" id="shopModal" aria-hidden="false">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="shopModalTitle">
+        <h3 id="shopModalTitle">全ショップ一覧</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>順位</th>
+              <th>販売店名</th>
+              <th>商品価格</th>
+              <th>粗利益額（円）</th>
+              <th>粗利益率（％）</th>
+              <th>数量</th>
+              <th>小計（円）</th>
+              <th>商品情報</th>
+            </tr>
+          </thead>
+          <tbody id="shopRows"></tbody>
+        </table>
+
+        <div class="modal-footer">
+          <div class="total-purchase">仕入れ金額合計<strong id="totalPurchase">0円</strong></div>
+          <div class="footer-right">
+            <button type="button" class="back-btn" id="closeModal">戻る</button>
+            <button type="button" class="apply-btn" id="applyModal">反映</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const initialShopData = [
+        {
+          shop: 'Amazon',
+          url: 'https://www.amazon.co.jp/',
+          price: 2520,
+          unitGrossProfit: 972,
+          grossMargin: 38.6,
+          info: '商品名: プロフィットはさみ 200mm スタンダード / 型番 SC-200'
+        },
+        {
+          shop: 'Yahoo!ショッピング',
+          url: 'https://shopping.yahoo.co.jp/',
+          price: 3900,
+          unitGrossProfit: 199,
+          grossMargin: 5.1,
+          info: '商品名: プロフィットはさみ 200mm スタンダード / JAN 1234567890123'
+        },
+        {
+          shop: '楽天市場',
+          url: 'https://www.rakuten.co.jp/',
+          price: 3980,
+          unitGrossProfit: 123,
+          grossMargin: 3.1,
+          info: '商品名: プロフィットはさみ 200mm スタンダード（国内正規品）'
+        },
+        {
+          shop: 'Qoo10',
+          url: 'https://www.qoo10.jp/',
+          price: 4150,
+          unitGrossProfit: 48,
+          grossMargin: 1.2,
+          info: '商品名: プロフィットはさみ 200mm スタンダード [並行輸入]'
+        },
+        {
+          shop: 'au PAY マーケット',
+          url: 'https://wowma.jp/',
+          price: 4230,
+          unitGrossProfit: 65,
+          grossMargin: 1.5,
+          info: '商品名: プロフィットはさみ 200mm スタンダード オールステンレス'
+        },
+        {
+          shop: 'ヨドバシ.com',
+          url: 'https://www.yodobashi.com/',
+          price: 4290,
+          unitGrossProfit: 82,
+          grossMargin: 1.9,
+          info: '商品名: プロフィットはさみ 200mm スタンダード 左右対称グリップ'
+        },
+        {
+          shop: 'LOHACO',
+          url: 'https://lohaco.yahoo.co.jp/',
+          price: 4350,
+          unitGrossProfit: 90,
+          grossMargin: 2.1,
+          info: '商品名: プロフィットはさみ 200mm スタンダード 家庭用モデル'
+        },
+        {
+          shop: 'MonotaRO',
+          url: 'https://www.monotaro.com/',
+          price: 4480,
+          unitGrossProfit: 105,
+          grossMargin: 2.3,
+          info: '商品名: プロフィットはさみ 200mm スタンダード 工作用モデル'
+        },
+        {
+          shop: 'ASKUL',
+          url: 'https://www.askul.co.jp/',
+          price: 4590,
+          unitGrossProfit: 115,
+          grossMargin: 2.5,
+          info: '商品名: プロフィットはさみ 200mm スタンダード 抗菌モデル'
+        },
+        {
+          shop: 'ビックカメラ.com',
+          url: 'https://www.biccamera.com/',
+          price: 4720,
+          unitGrossProfit: 129,
+          grossMargin: 2.7,
+          info: '商品名: プロフィットはさみ 200mm スタンダード チタンコート'
+        }
+      ];
+
+      const shopData = initialShopData
+        .map((row) => ({ ...row, quantity: 0 }))
+        .sort((a, b) => a.price - b.price)
+        .slice(0, 10);
+
+      const shopRows = document.getElementById('shopRows');
+      const modal = document.getElementById('shopModal');
+      const openModal = document.getElementById('openModal');
+      const closeModal = document.getElementById('closeModal');
+      const applyModal = document.getElementById('applyModal');
+      const totalPurchase = document.getElementById('totalPurchase');
+
+      const formatMoney = (value) => `${value.toLocaleString()}円`;
+
+      function updateSummary() {
+        const total = shopData.reduce((sum, row) => sum + row.price * row.quantity, 0);
+        totalPurchase.textContent = formatMoney(total);
+      }
+
+      function updateRowValues(index) {
+        const row = shopData[index];
+        const subtotalEl = document.querySelector(`[data-subtotal='${index}']`);
+
+        subtotalEl.textContent = formatMoney(row.price * row.quantity);
+      }
+
+      function onQuantityChange(event) {
+        const input = event.target;
+        const index = Number(input.dataset.index);
+        const value = Number(input.value);
+        const quantity = Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+
+        shopData[index].quantity = quantity;
+        if (quantity !== value) {
+          input.value = quantity;
+        }
+
+        updateRowValues(index);
+        updateSummary();
+      }
+
+      function renderRows() {
+        const basePrice = shopData[0].price;
+        shopRows.innerHTML = shopData
+          .map((row, idx) => {
+            const diff = row.price - basePrice;
+            const diffLabel = idx === 0 ? '' : `<span class="price-diff">(+${diff.toLocaleString()}円)</span>`;
+
+            return `
+              <tr>
+                <td>${idx + 1}</td>
+                <td><a class="shop-link" href="${row.url}" target="_blank" rel="noopener noreferrer">${row.shop}</a></td>
+                <td class="money-cell">
+                  <span class="price-line">${formatMoney(row.price)}</span>
+                  ${diffLabel}
+                </td>
+                <td class="money-cell"><span class="gross-profit">${formatMoney(row.unitGrossProfit)}</span></td>
+                <td>${row.grossMargin.toFixed(1)}%</td>
+                <td>
+                  <input
+                    type="number"
+                    min="0"
+                    value="${row.quantity}"
+                    class="qty-modal-input"
+                    data-index="${idx}"
+                  />
+                </td>
+                <td class="money-cell"><span class="subtotal" data-subtotal="${idx}">${formatMoney(row.price * row.quantity)}</span></td>
+                <td>${row.info}</td>
+              </tr>
+            `;
+          })
+          .join('');
+
+        document.querySelectorAll('.qty-modal-input').forEach((input) => {
+          input.addEventListener('input', onQuantityChange);
+          input.addEventListener('change', onQuantityChange);
+        });
+
+        updateSummary();
+      }
+
+      function showModal() {
+        renderRows();
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      function hideModal() {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      renderRows();
+      openModal.addEventListener('click', showModal);
+      closeModal.addEventListener('click', hideModal);
+      applyModal.addEventListener('click', hideModal);
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal) hideModal();
+      });
+    </script>
+  </body>
+</html>
