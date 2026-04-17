@@ -170,7 +170,7 @@
       }
 
       .modal {
-        width: min(980px, 100%);
+        width: min(1220px, 100%);
         max-height: 90vh;
         overflow: auto;
         border-radius: 20px;
@@ -219,7 +219,9 @@
         text-decoration: underline;
       }
 
-      .price-line {
+      .price-line,
+      .subtotal,
+      .gross-profit {
         font-weight: 700;
       }
 
@@ -237,11 +239,34 @@
         text-align: right;
       }
 
+      .money-cell {
+        white-space: nowrap;
+      }
+
       .modal-footer {
         margin-top: 18px;
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+        align-items: center;
         gap: 12px;
+      }
+
+      .footer-right {
+        display: flex;
+        gap: 12px;
+      }
+
+      .total-purchase {
+        background: #ede4c7;
+        border: 1px solid #d7ca9e;
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-weight: 700;
+      }
+
+      .total-purchase strong {
+        margin-left: 6px;
+        font-size: 20px;
       }
 
       .back-btn {
@@ -278,6 +303,15 @@
         .sub {
           font-size: 22px;
         }
+
+        .modal-footer {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .footer-right {
+          justify-content: flex-end;
+        }
       }
     </style>
   </head>
@@ -292,7 +326,7 @@
         <div class="rank-badge">1</div>
         <div class="name-price">
           <span class="shop-name">Amazon</span>
-          <span class="price-pill">2520</span>
+          <span class="price-pill">2,520</span>
           <span class="meta">円&nbsp;&nbsp;粗利益率 38.6%</span>
         </div>
         <div class="qty-wrap">数量</div>
@@ -303,7 +337,7 @@
         <div class="rank-badge">2</div>
         <div class="name-price">
           <span class="shop-name">Yahoo</span>
-          <span class="price-pill">3900</span>
+          <span class="price-pill">3,900</span>
           <span class="meta">円&nbsp;&nbsp;粗利益率 5.1%</span>
         </div>
         <div class="qty-wrap">数量</div>
@@ -314,7 +348,7 @@
         <div class="rank-badge">3</div>
         <div class="name-price">
           <span class="shop-name">楽天</span>
-          <span class="price-pill">3980</span>
+          <span class="price-pill">3,980</span>
           <span class="meta">円&nbsp;&nbsp;粗利益率 3.1%</span>
         </div>
         <div class="qty-wrap">数量</div>
@@ -332,6 +366,7 @@
               <th>販売店名（リンク）</th>
               <th>商品価格</th>
               <th>数量</th>
+              <th>小計（円）</th>
               <th>粗利益額（円）</th>
               <th>粗利益率（％）</th>
               <th>商品情報</th>
@@ -341,53 +376,141 @@
         </table>
 
         <div class="modal-footer">
-          <button type="button" class="back-btn" id="closeModal">戻る</button>
-          <button type="button" class="apply-btn" id="applyModal">反映</button>
+          <div class="total-purchase">仕入れ金額合計<strong id="totalPurchase">0円</strong></div>
+          <div class="footer-right">
+            <button type="button" class="back-btn" id="closeModal">戻る</button>
+            <button type="button" class="apply-btn" id="applyModal">反映</button>
+          </div>
         </div>
       </div>
     </div>
 
     <script>
-      const shopData = [
+      const initialShopData = [
         {
           shop: 'Amazon',
           url: 'https://www.amazon.co.jp/',
           price: 2520,
-          grossProfit: 972,
+          unitGrossProfit: 972,
           grossMargin: 38.6,
-          info: '商品名: ○○クリーム 100g / 型番 ABC-100'
+          info: '商品名: 高精度クラフトはさみ 200mm / 型番 SC-200'
         },
         {
           shop: 'Yahoo!ショッピング',
           url: 'https://shopping.yahoo.co.jp/',
           price: 3900,
-          grossProfit: 199,
+          unitGrossProfit: 199,
           grossMargin: 5.1,
-          info: '商品名: ○○クリーム 100グラム / JAN 1234567890123'
+          info: '商品名: ステンレス万能はさみ 195mm / JAN 1234567890123'
         },
         {
           shop: '楽天市場',
           url: 'https://www.rakuten.co.jp/',
           price: 3980,
-          grossProfit: 123,
+          unitGrossProfit: 123,
           grossMargin: 3.1,
-          info: '商品名: 〇〇クリーム（国内正規品）100g'
+          info: '商品名: 軽量フィットはさみ（国内正規品）'
         },
         {
           shop: 'Qoo10',
           url: 'https://www.qoo10.jp/',
           price: 4150,
-          grossProfit: 48,
+          unitGrossProfit: 48,
           grossMargin: 1.2,
-          info: '商品名: ○○クリーム [並行輸入] 100g'
+          info: '商品名: 強力カットはさみ [並行輸入]'
+        },
+        {
+          shop: 'au PAY マーケット',
+          url: 'https://wowma.jp/',
+          price: 4230,
+          unitGrossProfit: 65,
+          grossMargin: 1.5,
+          info: '商品名: 事務用オールステンレスはさみ'
+        },
+        {
+          shop: 'ヨドバシ.com',
+          url: 'https://www.yodobashi.com/',
+          price: 4290,
+          unitGrossProfit: 82,
+          grossMargin: 1.9,
+          info: '商品名: 左右対称グリップはさみ'
+        },
+        {
+          shop: 'LOHACO',
+          url: 'https://lohaco.yahoo.co.jp/',
+          price: 4350,
+          unitGrossProfit: 90,
+          grossMargin: 2.1,
+          info: '商品名: 家庭用多目的はさみ 180mm'
+        },
+        {
+          shop: 'MonotaRO',
+          url: 'https://www.monotaro.com/',
+          price: 4480,
+          unitGrossProfit: 105,
+          grossMargin: 2.3,
+          info: '商品名: 工作用ハードブレードはさみ'
+        },
+        {
+          shop: 'ASKUL',
+          url: 'https://www.askul.co.jp/',
+          price: 4590,
+          unitGrossProfit: 115,
+          grossMargin: 2.5,
+          info: '商品名: オフィス向け抗菌はさみ 175mm'
+        },
+        {
+          shop: 'ビックカメラ.com',
+          url: 'https://www.biccamera.com/',
+          price: 4720,
+          unitGrossProfit: 129,
+          grossMargin: 2.7,
+          info: '商品名: チタンコート高耐久はさみ'
         }
-      ].sort((a, b) => a.price - b.price);
+      ];
+
+      const shopData = initialShopData
+        .map((row) => ({ ...row, quantity: 0 }))
+        .sort((a, b) => a.price - b.price)
+        .slice(0, 10);
 
       const shopRows = document.getElementById('shopRows');
       const modal = document.getElementById('shopModal');
       const openModal = document.getElementById('openModal');
       const closeModal = document.getElementById('closeModal');
       const applyModal = document.getElementById('applyModal');
+      const totalPurchase = document.getElementById('totalPurchase');
+
+      const formatMoney = (value) => `${value.toLocaleString()}円`;
+
+      function updateSummary() {
+        const total = shopData.reduce((sum, row) => sum + row.price * row.quantity, 0);
+        totalPurchase.textContent = formatMoney(total);
+      }
+
+      function updateRowValues(index) {
+        const row = shopData[index];
+        const subtotalEl = document.querySelector(`[data-subtotal='${index}']`);
+        const grossProfitEl = document.querySelector(`[data-gross-profit='${index}']`);
+
+        subtotalEl.textContent = formatMoney(row.price * row.quantity);
+        grossProfitEl.textContent = formatMoney(row.unitGrossProfit * row.quantity);
+      }
+
+      function onQuantityChange(event) {
+        const input = event.target;
+        const index = Number(input.dataset.index);
+        const value = Number(input.value);
+        const quantity = Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+
+        shopData[index].quantity = quantity;
+        if (quantity !== value) {
+          input.value = quantity;
+        }
+
+        updateRowValues(index);
+        updateSummary();
+      }
 
       function renderRows() {
         const basePrice = shopData[0].price;
@@ -400,18 +523,34 @@
               <tr>
                 <td>${idx + 1}</td>
                 <td><a class="shop-link" href="${row.url}" target="_blank" rel="noopener noreferrer">${row.shop}</a></td>
-                <td>
-                  <span class="price-line">${row.price.toLocaleString()}円</span>
+                <td class="money-cell">
+                  <span class="price-line">${formatMoney(row.price)}</span>
                   ${diffLabel}
                 </td>
-                <td><input type="number" min="0" value="0" class="qty-modal-input" /></td>
-                <td>${row.grossProfit.toLocaleString()}</td>
+                <td>
+                  <input
+                    type="number"
+                    min="0"
+                    value="${row.quantity}"
+                    class="qty-modal-input"
+                    data-index="${idx}"
+                  />
+                </td>
+                <td class="money-cell"><span class="subtotal" data-subtotal="${idx}">${formatMoney(row.price * row.quantity)}</span></td>
+                <td class="money-cell"><span class="gross-profit" data-gross-profit="${idx}">${formatMoney(row.unitGrossProfit * row.quantity)}</span></td>
                 <td>${row.grossMargin.toFixed(1)}</td>
                 <td>${row.info}</td>
               </tr>
             `;
           })
           .join('');
+
+        document.querySelectorAll('.qty-modal-input').forEach((input) => {
+          input.addEventListener('input', onQuantityChange);
+          input.addEventListener('change', onQuantityChange);
+        });
+
+        updateSummary();
       }
 
       function showModal() {
