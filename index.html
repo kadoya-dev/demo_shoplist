@@ -205,6 +205,10 @@
         font-weight: 800;
       }
 
+      .nowrap {
+        white-space: nowrap;
+      }
+
       tr:last-child td {
         border-bottom: none;
       }
@@ -223,12 +227,6 @@
       .subtotal,
       .gross-profit {
         font-weight: 700;
-      }
-
-      .price-diff {
-        color: #6c7077;
-        font-size: 14px;
-        margin-left: 6px;
       }
 
       .qty-modal-input {
@@ -379,7 +377,7 @@
             <tr>
               <th>順位</th>
               <th>販売店名</th>
-              <th>商品価格</th>
+              <th class="nowrap">商品価格</th>
               <th>粗利益額（円）</th>
               <th>粗利益率（％）</th>
               <th>数量</th>
@@ -526,19 +524,14 @@
       }
 
       function renderRows() {
-        const basePrice = shopData[0].price;
         shopRows.innerHTML = shopData
           .map((row, idx) => {
-            const diff = row.price - basePrice;
-            const diffLabel = idx === 0 ? '' : `<span class="price-diff">(+${diff.toLocaleString()}円)</span>`;
-
             return `
               <tr>
                 <td>${idx + 1}</td>
                 <td><a class="shop-link" href="${row.url}" target="_blank" rel="noopener noreferrer">${row.shop}</a></td>
                 <td class="money-cell">
                   <span class="price-line">${formatMoney(row.price)}</span>
-                  ${diffLabel}
                 </td>
                 <td class="money-cell"><span class="gross-profit">${formatMoney(row.unitGrossProfit)}</span></td>
                 <td>${row.grossMargin.toFixed(1)}%</td>
